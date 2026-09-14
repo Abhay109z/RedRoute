@@ -4,6 +4,7 @@ import { Seat, DeckType } from '../../backend/types.js';
 import { EnrichedBusTrip } from '../types.js';
 import { useAuth } from '../context/AuthContext.js';
 import { useSocket } from '../context/SocketContext.js';
+import { apiUrl } from '../utils/api.js';
 
 interface SeatLayoutModalProps {
   trip: EnrichedBusTrip;
@@ -37,7 +38,7 @@ export const SeatLayoutModal: React.FC<SeatLayoutModalProps> = ({ trip, onClose,
   const fetchSeats = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/buses/${trip.id}/seats`);
+      const res = await fetch(apiUrl(`/api/buses/${trip.id}/seats`));
       const data = await res.json();
       if (data.seats) {
         setSeats(data.seats);
@@ -118,7 +119,7 @@ export const SeatLayoutModal: React.FC<SeatLayoutModalProps> = ({ trip, onClose,
     if (isAlreadySelected) {
       // Release lock
       try {
-        await fetch('/api/seats/release', {
+        await fetch(apiUrl('/api/seats/release'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -136,7 +137,7 @@ export const SeatLayoutModal: React.FC<SeatLayoutModalProps> = ({ trip, onClose,
     } else {
       // Atomic acquire lock via Redis
       try {
-        const res = await fetch('/api/seats/lock', {
+        const res = await fetch(apiUrl('/api/seats/lock'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

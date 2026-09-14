@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Cpu, Zap, ShieldCheck, Activity, RefreshCw, AlertTriangle, Layers, Database, Play, CheckCircle2, Server, Radio } from 'lucide-react';
 import { TraceSpan, BackgroundJob } from '../../backend/types.js';
+import { apiUrl } from '../utils/api.js';
 
 export const ArchitectureLab: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'concurrency' | 'sagas' | 'tracing' | 'workers' | 'ratelimit'>('concurrency');
@@ -32,16 +33,16 @@ export const ArchitectureLab: React.FC = () => {
   const fetchSystemData = async () => {
     try {
       if (activeTab === 'tracing') {
-        const res = await fetch('/api/system/traces');
+        const res = await fetch(apiUrl('/api/system/traces'));
         const json = await res.json();
         setTraces(json.traces || []);
       } else if (activeTab === 'workers') {
-        const res = await fetch('/api/system/workers');
+        const res = await fetch(apiUrl('/api/system/workers'));
         const json = await res.json();
         setWorkerJobs(json.jobs || []);
         setWorkerMetrics(json.metrics || null);
       } else if (activeTab === 'ratelimit') {
-        const res = await fetch('/api/system/circuit-breakers');
+        const res = await fetch(apiUrl('/api/system/circuit-breakers'));
         const json = await res.json();
         setBreakers(json.breakers || []);
       }
@@ -56,7 +57,7 @@ export const ArchitectureLab: React.FC = () => {
     setStressResult(null);
 
     try {
-      const res = await fetch('/api/stress-test/seat-lock', {
+      const res = await fetch(apiUrl('/api/stress-test/seat-lock'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -80,7 +81,7 @@ export const ArchitectureLab: React.FC = () => {
     setSagaRunResult(null);
 
     try {
-      const res = await fetch('/api/bookings/checkout', {
+      const res = await fetch(apiUrl('/api/bookings/checkout'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -116,7 +117,7 @@ export const ArchitectureLab: React.FC = () => {
 
     for (let i = 0; i < 45; i++) {
       try {
-        const res = await fetch('/api/routes/search');
+        const res = await fetch(apiUrl('/api/routes/search'));
         if (res.status === 429) {
           blockedCount++;
         } else {

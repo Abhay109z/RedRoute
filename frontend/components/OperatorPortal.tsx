@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Bus, Users, TrendingUp, DollarSign, Clock, Settings, Edit3, CheckCircle2, ShieldAlert } from 'lucide-react';
 import { EnrichedBusTrip } from '../types.js';
+import { apiUrl } from '../utils/api.js';
 
 interface OperatorFleetData {
   metrics: {
@@ -31,7 +32,7 @@ export const OperatorPortal: React.FC = () => {
   const fetchFleetData = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/operator/fleet');
+      const res = await fetch(apiUrl('/api/operator/fleet'));
       const json = await res.json();
       setData(json);
     } catch (e) {
@@ -55,7 +56,7 @@ export const OperatorPortal: React.FC = () => {
     setIsSaving(true);
 
     try {
-      const res = await fetch(`/api/operator/buses/${editingTrip.id}/schedule`, {
+      const res = await fetch(apiUrl(`/api/operator/buses/${editingTrip.id}/schedule`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

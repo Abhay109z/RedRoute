@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Radio, Navigation, Gauge, Clock, MapPin, Compass, Bus, ShieldCheck, Sparkles, RefreshCw } from 'lucide-react';
 import { useSocket } from '../context/SocketContext.js';
 import { EnrichedBusTrip } from '../types.js';
+import { apiUrl } from '../utils/api.js';
 
 interface FleetRadarViewProps {
   trips: EnrichedBusTrip[];
@@ -31,7 +32,7 @@ export const FleetRadarView: React.FC<FleetRadarViewProps> = ({ trips, onOpenSea
   const fetchTelemetry = async (tripId: string) => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/gps/${tripId}`);
+      const res = await fetch(apiUrl(`/api/gps/${tripId}`));
       const data = await res.json();
       if (!data.error) {
         setTelemetry(data);
@@ -59,7 +60,7 @@ export const FleetRadarView: React.FC<FleetRadarViewProps> = ({ trips, onOpenSea
       const newLng = parseFloat((telemetry.lng + 0.006).toFixed(6));
       const newSpeed = Math.floor(68 + Math.random() * 22);
 
-      const res = await fetch('/api/gps/driver-update', {
+      const res = await fetch(apiUrl('/api/gps/driver-update'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

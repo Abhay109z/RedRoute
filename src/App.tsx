@@ -13,6 +13,7 @@ import { ArchitectureLab } from '../frontend/components/ArchitectureLab.js';
 import { UserBookingsList } from '../frontend/components/UserBookingsList.js';
 import { FleetRadarView } from '../frontend/components/FleetRadarView.js';
 import { PnrLookupModal } from '../frontend/components/PnrLookupModal.js';
+import { apiUrl } from '../frontend/utils/api.js';
 import { EnrichedBusTrip } from '../frontend/types.js';
 import { Seat, Booking } from '../backend/types.js';
 import { Bus, ShieldAlert, Sparkles, CheckCircle2, Radio, Server, Layers, Cpu, ShieldCheck, Database, Phone, Mail } from 'lucide-react';
@@ -59,7 +60,7 @@ function RedRouteAppContent() {
   // Fetch MongoDB status
   const fetchMongoStatus = async () => {
     try {
-      const res = await fetch('/api/mongodb/status');
+      const res = await fetch(apiUrl('/api/mongodb/status'));
       const data = await res.json();
       setMongoInfo(data);
     } catch (e) {
@@ -91,7 +92,7 @@ function RedRouteAppContent() {
       if (destination) params.append('destination', destination);
       if (date) params.append('date', date);
 
-      const res = await fetch(`/api/routes/search?${params.toString()}`);
+      const res = await fetch(apiUrl(`/api/routes/search?${params.toString()}`));
       const data = await res.json();
       if (data.trips) {
         setTrips(data.trips);

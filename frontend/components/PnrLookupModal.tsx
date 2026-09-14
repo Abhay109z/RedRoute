@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Search, ShieldCheck, Ticket, AlertCircle, ArrowRight } from 'lucide-react';
 import { Booking } from '../../backend/types.js';
+import { apiUrl } from '../utils/api.js';
 
 interface PnrLookupModalProps {
   onClose: () => void;
@@ -21,7 +22,7 @@ export const PnrLookupModal: React.FC<PnrLookupModalProps> = ({ onClose, onSelec
     setError(null);
 
     try {
-      const res = await fetch(`/api/bookings/pnr/${pnr}`);
+      const res = await fetch(apiUrl(`/api/bookings/pnr/${pnr}`));
       const data = await res.json();
 
       if (!res.ok || !data.booking) {

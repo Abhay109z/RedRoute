@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, CheckCircle2, QrCode, Radio, Download, AlertTriangle, ArrowRight, ShieldCheck, MapPin, Calendar, Clock, Bus } from 'lucide-react';
 import { Booking } from '../../backend/types.js';
+import { apiUrl } from '../utils/api.js';
 
 interface TicketModalProps {
   booking: Booking;
@@ -28,7 +29,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
 
   const fetchQuote = async () => {
     try {
-      const res = await fetch(`/api/bookings/pnr/${booking.pnr}`);
+      const res = await fetch(apiUrl(`/api/bookings/pnr/${booking.pnr}`));
       const data = await res.json();
       if (data.booking) {
         setCurrentBooking(data.booking);
@@ -42,7 +43,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
   const handleCancelBooking = async () => {
     setIsCancelling(true);
     try {
-      const res = await fetch('/api/bookings/cancel', {
+      const res = await fetch(apiUrl('/api/bookings/cancel'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ bookingId: currentBooking.id }),

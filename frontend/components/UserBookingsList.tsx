@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Ticket, Radio, ArrowRight, QrCode, AlertCircle, Search, Calendar, User, Clock } from 'lucide-react';
 import { Booking } from '../../backend/types.js';
 import { useAuth } from '../context/AuthContext.js';
+import { apiUrl } from '../utils/api.js';
 
 interface UserBookingsListProps {
   onViewTicket: (booking: Booking) => void;
@@ -30,7 +31,7 @@ export const UserBookingsList: React.FC<UserBookingsListProps> = ({ onViewTicket
           ? `/api/bookings/user/${userId}`
           : '/api/bookings/user';
 
-      const res = await fetch(url);
+      const res = await fetch(apiUrl(url));
       if (!res.ok) {
         console.warn(`[UserBookings] Server responded with status: ${res.status}`);
         return;
@@ -58,7 +59,7 @@ export const UserBookingsList: React.FC<UserBookingsListProps> = ({ onViewTicket
     setPnrLookupResult(null);
 
     try {
-      const res = await fetch(`/api/bookings/pnr/${pnrSearch.trim()}`);
+      const res = await fetch(apiUrl(`/api/bookings/pnr/${pnrSearch.trim()}`));
       const data = await res.json();
       if (res.ok && data.booking) {
         setPnrLookupResult(data.booking);

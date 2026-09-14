@@ -40,8 +40,22 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       if (unmounted) return;
 
       try {
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${protocol}//${window.location.host}/ws`;
+        let wsUrl: string;
+        const metaEnv = (import.meta as any).env;
+        if (metaEnv?.VITE_BACKEND_WS_URL) {
+          wsUrl = metaEnv.VITE_BACKEND_WS_URL;
+        } else if (typeof window !== 'undefined') {
+          const hostname = window.location.hostname;
+          // When running on Vercel, Netlify, or external static hosts, connect directly to the Render WebSocket server
+          if (hostname.includes('vercel.app') || hostname.includes('netlify.app') || hostname.includes('pages.dev')) {
+            wsUrl = 'wss://redroute-tqew.onrender.com/ws';
+          } else {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            wsUrl = `${protocol}//${window.location.host}/ws`;
+          }
+        } else {
+          wsUrl = 'wss://redroute-tqew.onrender.com/ws';
+        }
 
         const ws = new WebSocket(wsUrl);
         wsRef.current = ws;

@@ -3,6 +3,7 @@ import { X, ShieldCheck, CreditCard, RefreshCw, AlertTriangle, ArrowRight, Check
 import { Seat, Booking, SeatGender } from '../../backend/types.js';
 import { EnrichedBusTrip } from '../types.js';
 import { useAuth } from '../context/AuthContext.js';
+import { apiUrl } from '../utils/api.js';
 
 interface CheckoutModalProps {
   trip: EnrichedBusTrip;
@@ -48,7 +49,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     setSagaLogs([]);
 
     try {
-      const res = await fetch('/api/bookings/checkout', {
+      const res = await fetch(apiUrl('/api/bookings/checkout'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

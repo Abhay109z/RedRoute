@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Radio, Navigation, Gauge, Clock, MapPin, Compass, Send, ShieldCheck, Bus } from 'lucide-react';
 import { useSocket } from '../context/SocketContext.js';
 import { GpsTelemetry } from '../../backend/services/gpsTrackingService.js';
+import { apiUrl } from '../utils/api.js';
 
 interface LiveTrackingModalProps {
   tripId: string;
@@ -27,7 +28,7 @@ export const LiveTrackingModal: React.FC<LiveTrackingModalProps> = ({ tripId, on
   const fetchTelemetry = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/gps/${tripId}`);
+      const res = await fetch(apiUrl(`/api/gps/${tripId}`));
       const data = await res.json();
       if (!data.error) {
         setTelemetry(data);
@@ -57,7 +58,7 @@ export const LiveTrackingModal: React.FC<LiveTrackingModalProps> = ({ tripId, on
       const newLng = parseFloat((telemetry.lng + 0.005).toFixed(6));
       const newSpeed = Math.floor(70 + Math.random() * 20);
 
-      const res = await fetch('/api/gps/driver-update', {
+      const res = await fetch(apiUrl('/api/gps/driver-update'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
