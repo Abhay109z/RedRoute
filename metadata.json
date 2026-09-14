@@ -1,0 +1,6 @@
+{
+  "name": "RedRoute",
+  "description": "RedRoute is India's high-concurrency bus ticketing platform featuring distributed atomic seat locking, real-time GPS telemetry, dynamic pricing, saga transactions, and fleet operations.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
