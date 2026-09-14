@@ -13,7 +13,12 @@ export function apiUrl(path: string): string {
 
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
-    if (hostname.includes('vercel.app') || hostname.includes('netlify.app') || hostname.includes('pages.dev')) {
+    const isLocalOrContainer =
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname.endsWith('.run.app');
+
+    if (!isLocalOrContainer) {
       return `${DEFAULT_REMOTE_BACKEND}${path.startsWith('/') ? path : '/' + path}`;
     }
   }
