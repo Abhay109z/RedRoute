@@ -15,6 +15,11 @@ export const apiRouter = Router();
 
 // --- Rate Limiting Middleware using Redis Token Bucket ---
 const rateLimiterMiddleware = (req: Request, res: Response, next: Function) => {
+  // Allow health and status probes to bypass rate limiting
+  if (req.path === '/health' || req.path === '/healthz' || req.path === '/ping' || req.path === '/mongodb/status') {
+    return next();
+  }
+
   const clientKey = req.ip || req.headers['x-forwarded-for']?.toString() || 'anonymous_client';
   const check = redis.checkRateLimit(clientKey, 40, 15);
 
@@ -426,3 +431,12 @@ apiRouter.get('/health', (req: Request, res: Response) => {
     websocketClients: wsHub.getConnectedClientsCount(),
   });
 });
+
+// Fallback 404 for unknown /api/* requests
+apiRouter.use('*', (req: Request, res: Response) => {
+  res.status(404).json({
+    error: 'NOT_FOUND',
+    message: `API route ${req.baseUrl}${req.path} does not exist.`,
+  });
+});
+

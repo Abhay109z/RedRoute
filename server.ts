@@ -14,8 +14,24 @@ async function startServer() {
   const PORT = 3000;
   const server = http.createServer(app);
 
+  // Security & standard headers
+  app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    next();
+  });
+
   // Body parser
   app.use(express.json());
+
+  // Cloud Run / container orchestration health probes (direct root access)
+  app.get(['/health', '/healthz'], (req, res) => {
+    res.status(200).json({
+      status: 'healthy',
+      app: 'RedRoute',
+      uptimeSec: Math.floor(process.uptime()),
+      timestamp: new Date().toISOString(),
+    });
+  });
 
   // Mount Backend API routes
   app.use('/api', apiRouter);
@@ -42,6 +58,23 @@ async function startServer() {
     console.log(`[RedRoute] Server running on http://0.0.0.0:${PORT}`);
     console.log(`[RedRoute] WebSockets active on ws://0.0.0.0:${PORT}/ws`);
   });
+
+  // Graceful shutdown handling for Cloud Run & container orchestrators
+  const handleShutdown = (signal: string) => {
+    console.log(`[RedRoute] Received ${signal}. Draining connections for graceful shutdown...`);
+    server.close(() => {
+      console.log('[RedRoute] HTTP & WebSocket servers closed successfully.');
+      process.exit(0);
+    });
+    // Force shutdown after 10s if connections fail to drain
+    setTimeout(() => {
+      console.error('[RedRoute] Forcing shutdown after timeout.');
+      process.exit(1);
+    }, 10000).unref();
+  };
+
+  process.on('SIGTERM', () => handleShutdown('SIGTERM'));
+  process.on('SIGINT', () => handleShutdown('SIGINT'));
 }
 
 startServer().catch((err) => {
