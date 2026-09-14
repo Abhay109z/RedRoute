@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext.js';
 import { useSocket } from '../context/SocketContext.js';
-import { Bus, Ticket, Radio, HelpCircle, ShieldCheck, User, ChevronDown, Cpu, Sparkles, Navigation, Layers } from 'lucide-react';
+import { Bus, Ticket, Radio, HelpCircle, ShieldCheck, User, ChevronDown, Cpu, Sparkles, Navigation, Layers, Server, Globe } from 'lucide-react';
 import { UserRole } from '../types.js';
 
 interface NavbarProps {
