@@ -31,6 +31,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [activeLocksMap, setActiveLocksMap] = useState<Record<string, { owner: string; expiresAt: number }>>({});
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<any>(null);
+  const reconnectAttemptsRef = useRef<number>(0);
   const activeTripsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
@@ -48,6 +49,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
         ws.onopen = () => {
           if (unmounted) return;
+          reconnectAttemptsRef.current = 0;
           setIsConnected(true);
           if (userId) {
             ws.send(JSON.stringify({ type: 'SET_USER', userId }));
@@ -92,18 +94,29 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           }
         };
 
-        ws.onclose = () => {
+        const scheduleReconnect = () => {
           if (unmounted) return;
           setIsConnected(false);
-          reconnectTimeoutRef.current = setTimeout(connectWebSocket, 3000);
+          reconnectAttemptsRef.current += 1;
+          const delay = Math.min(2500 * Math.pow(1.4, reconnectAttemptsRef.current - 1), 30000);
+          if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
+          reconnectTimeoutRef.current = setTimeout(connectWebSocket, delay);
+        };
+
+        ws.onclose = () => {
+          scheduleReconnect();
         };
 
         ws.onerror = () => {
           setIsConnected(false);
         };
       } catch (err) {
+        if (unmounted) return;
         setIsConnected(false);
-        reconnectTimeoutRef.current = setTimeout(connectWebSocket, 3000);
+        reconnectAttemptsRef.current += 1;
+        const delay = Math.min(2500 * Math.pow(1.4, reconnectAttemptsRef.current - 1), 30000);
+        if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = setTimeout(connectWebSocket, delay);
       }
     };
 
