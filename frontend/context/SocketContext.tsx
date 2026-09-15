@@ -104,23 +104,28 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           if (unmounted) return;
           setIsConnected(false);
           reconnectAttemptsRef.current += 1;
-          const delay = Math.min(2500 * Math.pow(1.4, reconnectAttemptsRef.current - 1), 30000);
+          const delay = Math.min(2500 * Math.pow(1.4, reconnectAttemptsRef.current - 1), 20000);
           if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
           reconnectTimeoutRef.current = setTimeout(connectWebSocket, delay);
         };
 
-        ws.onclose = () => {
-          scheduleReconnect();
+        ws.onclose = (event) => {
+          if (unmounted) return;
+          // Normal clean close (1000) does not require aggressive error logging
+          if (event.code !== 1000) {
+            scheduleReconnect();
+          }
         };
 
         ws.onerror = () => {
+          if (unmounted) return;
           setIsConnected(false);
         };
       } catch (err) {
         if (unmounted) return;
         setIsConnected(false);
         reconnectAttemptsRef.current += 1;
-        const delay = Math.min(2500 * Math.pow(1.4, reconnectAttemptsRef.current - 1), 30000);
+        const delay = Math.min(2500 * Math.pow(1.4, reconnectAttemptsRef.current - 1), 20000);
         if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
         reconnectTimeoutRef.current = setTimeout(connectWebSocket, delay);
       }
@@ -131,7 +136,19 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return () => {
       unmounted = true;
       if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
-      if (wsRef.current) wsRef.current.close();
+      if (wsRef.current) {
+        const socket = wsRef.current;
+        wsRef.current = null;
+        socket.onclose = null;
+        socket.onerror = null;
+        if (socket.readyState === WebSocket.OPEN) {
+          try { socket.close(1000, 'Teardown'); } catch {}
+        } else if (socket.readyState === WebSocket.CONNECTING) {
+          socket.onopen = () => {
+            try { socket.close(1000, 'Teardown'); } catch {}
+          };
+        }
+      }
     };
   }, [userId]);
 
