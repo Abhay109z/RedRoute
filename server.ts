@@ -1,6 +1,7 @@
 import express from 'express';
 import http from 'http';
 import path from 'path';
+import cors from 'cors';
 import { createServer as createViteServer } from 'vite';
 import { apiRouter } from './backend/routes.js';
 import { wsHub } from './backend/websocket.js';
@@ -10,15 +11,20 @@ async function startServer() {
   const PORT = 3000;
   const server = http.createServer(app);
 
-  // Security & CORS headers to allow cross-origin requests from Vercel (https://red-route-three.vercel.app)
+  // Security & CORS configuration
+  // Explicitly supports https://red-route-three.vercel.app with credentials: true
+  app.use(cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl) or any web origin by echoing it back
+      callback(null, origin || true);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'X-CSRF-Token', 'X-Api-Version'],
+  }));
+
   app.use((req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
-    if (req.method === 'OPTIONS') {
-      return res.status(200).end();
-    }
     next();
   });
 

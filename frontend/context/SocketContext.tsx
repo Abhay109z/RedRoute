@@ -42,7 +42,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       try {
         const metaEnv = (import.meta as any).env;
-        let wsUrl: string = metaEnv?.VITE_BACKEND_WS_URL || 'wss://redroute-tqew.onrender.com/ws';
+        let wsUrl: string = metaEnv?.VITE_WS_URL || metaEnv?.VITE_BACKEND_WS_URL || 'wss://redroute-tqew.onrender.com/ws';
         if (wsUrl.startsWith('https://')) {
           wsUrl = wsUrl.replace(/^https:/, 'wss:');
         } else if (wsUrl.startsWith('http://')) {
