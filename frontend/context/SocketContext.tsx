@@ -42,8 +42,14 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       try {
         const metaEnv = (import.meta as any).env;
-        const wsUrl: string = metaEnv?.VITE_BACKEND_WS_URL || 'wss://redroute-tqew.onrender.com/ws';
+        let wsUrl: string = metaEnv?.VITE_BACKEND_WS_URL || 'wss://redroute-tqew.onrender.com/ws';
+        if (wsUrl.startsWith('https://')) {
+          wsUrl = wsUrl.replace(/^https:/, 'wss:');
+        } else if (wsUrl.startsWith('http://')) {
+          wsUrl = wsUrl.replace(/^http:/, 'ws:');
+        }
 
+        console.info(`[RedRoute] Connecting WebSocket to external backend: ${wsUrl}`);
         const ws = new WebSocket(wsUrl);
         wsRef.current = ws;
 
