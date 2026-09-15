@@ -24,6 +24,27 @@ interface SocketContextType {
 
 const SocketContext = createContext<SocketContextType | undefined>(undefined);
 
+function sanitizeWsUrl(rawUrl?: string, defaultUrl: string = 'wss://redroute-tqew.onrender.com/ws'): string {
+  if (!rawUrl || typeof rawUrl !== 'string') return defaultUrl;
+  let cleaned = rawUrl.trim();
+  const mdMatch = cleaned.match(/\[.*?\]\(([^\s\)]+)\)/);
+  if (mdMatch) cleaned = mdMatch[1];
+  cleaned = cleaned.replace(/^["'<]+|["'>]+$/g, '');
+  if (cleaned.startsWith('https://')) {
+    cleaned = cleaned.replace(/^https:/, 'wss:');
+  } else if (cleaned.startsWith('http://')) {
+    cleaned = cleaned.replace(/^http:/, 'ws:');
+  }
+  cleaned = cleaned.replace(/\/+$/, '');
+  if (!cleaned.endsWith('/ws')) {
+    cleaned = `${cleaned}/ws`;
+  }
+  if (cleaned.includes('vercel.app')) {
+    return defaultUrl;
+  }
+  return cleaned || defaultUrl;
+}
+
 export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { userId } = useAuth();
   const [isConnected, setIsConnected] = useState<boolean>(false);
@@ -42,12 +63,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       try {
         const metaEnv = (import.meta as any).env;
-        let wsUrl: string = metaEnv?.VITE_WS_URL || metaEnv?.VITE_BACKEND_WS_URL || 'wss://redroute-tqew.onrender.com/ws';
-        if (wsUrl.startsWith('https://')) {
-          wsUrl = wsUrl.replace(/^https:/, 'wss:');
-        } else if (wsUrl.startsWith('http://')) {
-          wsUrl = wsUrl.replace(/^http:/, 'ws:');
-        }
+        const wsUrl: string = sanitizeWsUrl(metaEnv?.VITE_WS_URL || metaEnv?.VITE_BACKEND_WS_URL);
 
         console.info(`[RedRoute] Connecting WebSocket to external backend: ${wsUrl}`);
         const ws = new WebSocket(wsUrl);
